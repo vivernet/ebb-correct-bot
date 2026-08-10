@@ -39,7 +39,30 @@ function loadConfig(env = process.env) {
     allowedUserIds: parseUserIds(env.ALLOWED_USER_IDS),
     adminChatId: env.ADMIN_CHAT_ID?.trim() || undefined,
     deleteUnauthorizedMessages: parseBoolean(env.DELETE_UNAUTHORIZED_MESSAGES, true),
+    webhookUrl: env.TELEGRAM_WEBHOOK_URL?.trim() || undefined,
+    webhookSecret: env.TELEGRAM_WEBHOOK_SECRET?.trim() || undefined,
   });
 }
 
-export { loadConfig, parseBoolean, parseUserIds };
+function loadWebhookConfig(env = process.env) {
+  const config = loadConfig(env);
+  const webhookUrl = required("TELEGRAM_WEBHOOK_URL", config.webhookUrl);
+  const webhookSecret = required("TELEGRAM_WEBHOOK_SECRET", config.webhookSecret);
+
+  let parsedUrl;
+  try {
+    parsedUrl = new URL(webhookUrl);
+  } catch {
+    throw new Error("TELEGRAM_WEBHOOK_URL must be a valid HTTPS URL.");
+  }
+  if (parsedUrl.protocol !== "https:") {
+    throw new Error("TELEGRAM_WEBHOOK_URL must use HTTPS.");
+  }
+  if (!/^[A-Za-z0-9_-]{1,256}$/.test(webhookSecret)) {
+    throw new Error("TELEGRAM_WEBHOOK_SECRET must contain 1-256 A-Z, a-z, 0-9, _ or - characters.");
+  }
+
+  return Object.freeze({ ...config, webhookUrl, webhookSecret, webhookPath: parsedUrl.pathname });
+}
+
+export { loadConfig, loadWebhookConfig, parseBoolean, parseUserIds };

@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { loadConfig, parseUserIds } from "../src/config.js";
+import { loadConfig, loadWebhookConfig, parseUserIds } from "../src/config.js";
 
 test("разбирает корректную конфигурацию", () => {
   const config = loadConfig({

@@ -6,8 +6,9 @@
   "type": "module",
   "scripts": {
     "start": "node src/index.js",
+    "start:deno": "deno run --allow-env --allow-net src/deno.js",
     "test": "node --test",
-    "check": "node --check src/index.js"
+    "check": "node --check src/index.js && node --check src/deno.js"
   },
   "author": "",
   "license": "MIT",
