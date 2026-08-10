@@ -38,7 +38,7 @@ function createBot(config, editor, logger = console) {
               ...(part.length <= 256
                 ? {
                     reply_markup: new InlineKeyboard().add({
-                      text: "Копировать",
+                      text: "📋 Копировать",
                       copy_text: { text: part },
                     }),
                   }
