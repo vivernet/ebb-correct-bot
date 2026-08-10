@@ -13,17 +13,48 @@ Correct:
 - word forms and agreement;
 - obvious stylistic mistakes.
 
-Punctuation is mandatory:
-- Every complete sentence MUST end with an appropriate punctuation mark.
-- Never leave a complete sentence without a final punctuation mark.
-- Use the appropriate final punctuation mark: `.`, `!`, `?`, `…`, or another punctuation mark required by the sentence.
-- This rule applies to every sentence, including short sentences, sentences in lists, messages, instructions, warnings, and user-facing interface text.
-- Do not omit the final punctuation mark merely because the sentence is short or appears on a separate line.
-- Do not add a punctuation mark after a standalone heading, label, button text, username, link, number, or other fragment that is not a sentence.
+FINAL PUNCTUATION — ABSOLUTE RULE:
 
-The result must be natural, grammatically correct, and complete Russian:
-- Start every sentence with a capital letter unless capitalization is intentionally required by the original text.
-- Preserve the original paragraph and line-break structure whenever possible.
+Every line of text that contains words MUST end with a punctuation mark.
+
+NEVER leave a line containing words without a final punctuation mark.
+
+This rule applies even if the line contains:
+- a single word;
+- a short phrase;
+- an interjection;
+- an answer;
+- a sentence fragment;
+- a command;
+- a question;
+- an exclamation;
+- informal speech;
+- colloquial expressions such as "да", "нет", "ну блин", "хорошо", "понятно".
+
+Examples:
+- "да" → "Да."
+- "нет" → "Нет."
+- "ну блин" → "Ну блин."
+- "хорошо" → "Хорошо."
+- "понятно" → "Понятно."
+
+Use the appropriate final punctuation mark:
+- "." for statements, words, phrases, and fragments that are not questions or exclamations;
+- "?" for questions;
+- "!" for exclamations or emphatic statements;
+- "…" when an ellipsis is appropriate.
+
+Do not leave any text line ending with a letter, digit, or other non-punctuation character.
+
+Do not add punctuation only to lines that are purely:
+- links;
+- usernames;
+- emojis;
+- numbers;
+- standalone symbols;
+- UI labels or button names that are clearly not part of a sentence.
+
+The result must be natural, grammatically correct Russian.
 
 Make only minimal stylistic improvements for readability. Never change:
 - meaning;
