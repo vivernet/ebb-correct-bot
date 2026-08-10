@@ -9,11 +9,8 @@ function createBot(config, editor, logger = console) {
 
   async function alertAdmin(message) {
     if (!config.adminChatId) return;
-    try {
-      await bot.api.sendMessage(config.adminChatId, message);
-    } catch (error) {
-      logger.error("Не удалось отправить уведомление администратору.", error);
-    }
+    try { await bot.api.sendMessage(config.adminChatId, message, { parse_mode: "HTML", disable_web_page_preview: true }); }
+    catch (error) { logger.error("Не удалось отправить уведомление администратору.", error); }
   }
 
   bot.on("message:text", async (ctx) => {
@@ -21,8 +18,8 @@ function createBot(config, editor, logger = console) {
     const { chat, message_id: messageId, text } = ctx.msg;
 
     if (!config.allowedUserIds.has(userId)) {
-      logger.warn(`Попытка несанкционированного доступа: пользователь=${userId}, чат=${chat.id}`);
-      await alertAdmin(`Попытка несанкционированного доступа\nID пользователя: ${userId}\nID чата: ${chat.id}`);
+      logger.warn(`Неавторизованный пользователь: user_id=${userId}, chat_id=${chat.id}`);
+      await alertAdmin(`<tg-emoji emoji-id="5440660757194744323">‼️</tg-emoji> <b>Неавторизованный пользователь</b>\n\nUser ID: <code>${userId}</code>\nChat ID: <code>${chat.id}</code>`);
       if (config.deleteUnauthorizedMessages) {
         await ctx.deleteMessage().catch((error) => logger.warn("Не удалось удалить сообщение неавторизованного пользователя.", error));
       }
@@ -34,12 +31,13 @@ function createBot(config, editor, logger = console) {
       const editedText = await editor.editText(SYSTEM_PROMPT, text);
       const parts = splitForTelegram(editedText);
       for (const [index, part] of parts.entries()) {
-        await ctx.api.sendMessage(chat.id, part, index === 0 ? { reply_parameters: { message_id: messageId } } : undefined);
+        await ctx.api.sendMessage(chat.id, part, index === 0 ? { reply_parameters: { message_id: messageId }, disable_web_page_preview: true, } : undefined);
       }
     } catch (error) {
       logger.error(`Не удалось обработать сообщение в чате ${chat.id}.`, error);
-      await ctx.reply("Не удалось обработать текст. Попробуйте ещё раз позже.", {
+      await ctx.reply(`<tg-emoji emoji-id="5420323339723881652">⚠️</tg-emoji> <b>Не удалось обработать текст</b>\n\nПопробуйте ещё раз...`, {
         reply_parameters: { message_id: messageId },
+        parse_mode: "HTML",
       }).catch((replyError) => logger.error("Не удалось отправить сообщение об ошибке.", replyError));
     }
   });

@@ -10,7 +10,7 @@
 
 | Переменная | Требуемое значение |
 | --- | --- |
-| `TELEGRAM_WEBHOOK_URL` | Публичный HTTPS-адрес этого развёртывания, оканчивающийся на `/telegram`, например `https://your-project.deno.dev/telegram` |
+| `TELEGRAM_WEBHOOK_URL` | Публичный HTTPS-адрес этого развёртывания, оканчивающийся на `/telegram`, например `https://ebb-correct-bot.{organization-slug}.deno.net/telegram` |
 | `TELEGRAM_WEBHOOK_SECRET` | Новая случайная строка длиной от 1 до 256 символов: букв, цифр, `_` или `-` |
 
 Создайте в Deno Deploy проект из этого репозитория и выберите `src/deno.js` в
@@ -38,7 +38,7 @@
 | `TELEGRAM_BOT_TOKEN` | токен Telegram-бота |
 | `TELEGRAM_BOT_API_URL` | необязательный адрес самостоятельно развёрнутого Telegram Bot API |
 | `OPENAI_API_KEY` | ключ API провайдера |
-| `OPENAI_BASE_URL` | базовый URL OpenAI-совместимого API; по умолчанию — ProxyAPI, как в исходном проекте |
+| `OPENAI_BASE_URL` | базовый URL OpenAI-совместимого API; по умолчанию — `https://api.openai.com/v1` |
 | `MODEL_ID` | идентификатор модели |
 | `ALLOWED_USER_IDS` | разрешённые Telegram ID через запятую |
 | `ADMIN_CHAT_ID` | необязательный чат для уведомлений о попытках доступа |

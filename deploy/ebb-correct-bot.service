@@ -9,7 +9,7 @@ User=bot
 Group=bot
 WorkingDirectory=/opt/ebb-correct-bot
 Environment=NODE_ENV=production
-EnvironmentFile=/etc/ebb-correct-bot.env
+EnvironmentFile=/opt/ebb-correct-bot/.env
 ExecStart=/usr/bin/node /opt/ebb-correct-bot/src/index.js
 Restart=on-failure
 RestartSec=5

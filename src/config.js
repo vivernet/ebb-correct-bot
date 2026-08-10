@@ -25,7 +25,7 @@ function parseBoolean(value, fallback) {
 }
 
 function loadConfig(env = process.env) {
-  const baseUrl = (env.OPENAI_BASE_URL || "https://api.proxyapi.ru/openai/v1").replace(/\/+$/, "");
+  const baseUrl = (env.OPENAI_BASE_URL || "https://api.openai.com/v1").replace(/\/+$/, "");
   if (!/^https:\/\//.test(baseUrl)) {
     throw new Error("OPENAI_BASE_URL должен использовать HTTPS.");
   }
