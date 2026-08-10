@@ -18,10 +18,10 @@ function createBot(config, editor, logger = console) {
     const { chat, message_id: messageId, text } = ctx.msg;
 
     if (!config.allowedUserIds.has(userId)) {
-      logger.warn(`Неавторизованный пользователь: user_id=${userId}, chat_id=${chat.id}`);
-      await alertAdmin(`<tg-emoji emoji-id="5440660757194744323">‼️</tg-emoji> <b>Неавторизованный пользователь</b>\n\nUser ID: <code>${userId}</code>\nChat ID: <code>${chat.id}</code>`);
+      logger.warn(`Неизвестный пользователь: user_id=${userId}, chat_id=${chat.id}`);
+      await alertAdmin(`<tg-emoji emoji-id="5447644880824181073">⚠️</tg-emoji> <b>Неизвестный пользователь</b>\n\nUser ID: <code>${userId}</code>\nChat ID: <code>${chat.id}</code>`);
       if (config.deleteUnauthorizedMessages) {
-        await ctx.deleteMessage().catch((error) => logger.warn("Не удалось удалить сообщение неавторизованного пользователя.", error));
+        await ctx.deleteMessage().catch((error) => logger.warn("Не удалось удалить сообщение от неизвестного пользователя.", error));
       }
       return;
     }
@@ -35,7 +35,7 @@ function createBot(config, editor, logger = console) {
       }
     } catch (error) {
       logger.error(`Не удалось обработать сообщение в чате ${chat.id}.`, error);
-      await ctx.reply(`<tg-emoji emoji-id="5420323339723881652">⚠️</tg-emoji> <b>Не удалось обработать текст</b>\n\nПопробуйте ещё раз...`, {
+      await ctx.reply(`<tg-emoji emoji-id="5440660757194744323">‼️</tg-emoji> <b>Не удалось обработать текст</b>\n\nПопробуйте ещё раз...`, {
         reply_parameters: { message_id: messageId },
         parse_mode: "HTML",
       }).catch((replyError) => logger.error("Не удалось отправить сообщение об ошибке.", replyError));
