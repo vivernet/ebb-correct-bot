@@ -26,6 +26,9 @@ Keep these brand names exactly as written:
 - P2P Маркет
 - XROCK
 - xRocket
+- @xRocket
+- @TonRocketSupportBot
+- Рокет → xRocket
 
 Only grammatical case changes are allowed when required by Russian grammar.`;
 
