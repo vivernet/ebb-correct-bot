@@ -1,4 +1,4 @@
-import { Bot, GrammyError, HttpError } from "grammy";
+import { Bot, GrammyError, HttpError, InlineKeyboard } from "grammy";
 import { SYSTEM_PROMPT } from "./prompts.js";
 import { splitForTelegram } from "./text.js";
 
@@ -31,7 +31,22 @@ function createBot(config, editor, logger = console) {
       const editedText = await editor.editText(SYSTEM_PROMPT, text);
       const parts = splitForTelegram(editedText);
       for (const [index, part] of parts.entries()) {
-        await ctx.api.sendMessage(chat.id, part, index === 0 ? { reply_parameters: { message_id: messageId }, disable_web_page_preview: true, } : undefined);
+        const options = index === 0
+          ? {
+              reply_parameters: { message_id: messageId },
+              disable_web_page_preview: true,
+              ...(part.length <= 256
+                ? {
+                    reply_markup: new InlineKeyboard().add({
+                      text: "Копировать",
+                      copy_text: { text: part },
+                    }),
+                  }
+                : {}),
+            }
+          : undefined;
+
+        await ctx.api.sendMessage(chat.id, part, options);
       }
     } catch (error) {
       logger.error(`Не удалось обработать сообщение в чате ${chat.id}.`, error);
