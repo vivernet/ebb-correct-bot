@@ -1,22 +1,23 @@
 # Ebb Correct Bot
 
-## Deno Deploy
+## Развёртывание в Deno Deploy
 
-The Deno Deploy entry point is `src/deno.js`. It receives Telegram updates over
-a webhook, so it must not run alongside `npm start` or any other long-polling
-instance using the same bot token.
+Точка входа для Deno Deploy — `src/deno.js`. Она получает обновления Telegram
+через вебхук, поэтому её нельзя запускать одновременно с `npm start` или другим
+экземпляром с long polling, использующим тот же токен бота.
 
-Set all regular environment variables plus these Deno Deploy secrets:
+Укажите все обычные переменные окружения и следующие секреты Deno Deploy:
 
-| Variable | Required value |
+| Переменная | Требуемое значение |
 | --- | --- |
-| `TELEGRAM_WEBHOOK_URL` | Public HTTPS URL of this deployment, ending in `/telegram`, for example `https://your-project.deno.dev/telegram` |
-| `TELEGRAM_WEBHOOK_SECRET` | A new random string of 1–256 characters: letters, digits, `_`, or `-` |
+| `TELEGRAM_WEBHOOK_URL` | Публичный HTTPS-адрес этого развёртывания, оканчивающийся на `/telegram`, например `https://your-project.deno.dev/telegram` |
+| `TELEGRAM_WEBHOOK_SECRET` | Новая случайная строка длиной от 1 до 256 символов: букв, цифр, `_` или `-` |
 
-In Deno Deploy, create a project from this repository and choose `src/deno.js`
-as the entry point. The application registers the webhook on startup. Deploy it
-once, stop every existing local/server bot process, then send the bot a test
-message. `GET /health` responds with `ok` for a basic availability check.
+Создайте в Deno Deploy проект из этого репозитория и выберите `src/deno.js` в
+качестве точки входа. При запуске приложение регистрирует вебхук. Разверните
+его один раз, остановите все уже запущенные локальные и серверные процессы бота,
+затем отправьте боту тестовое сообщение. Для базовой проверки доступности
+`GET /health` возвращает `ok`.
 
 Закрытый Telegram-бот, который принимает текст от разрешённых пользователей и возвращает его отредактированную русскоязычную версию. Для генерации используется совместимый с OpenAI API.
 
@@ -35,7 +36,7 @@ message. `GET /health` responds with `ok` for a basic availability check.
 | Переменная | Назначение |
 | --- | --- |
 | `TELEGRAM_BOT_TOKEN` | токен Telegram-бота |
-| `TELEGRAM_BOT_API_URL` | необязательный адрес self-hosted Telegram Bot API |
+| `TELEGRAM_BOT_API_URL` | необязательный адрес самостоятельно развёрнутого Telegram Bot API |
 | `OPENAI_API_KEY` | ключ API провайдера |
 | `OPENAI_BASE_URL` | базовый URL OpenAI-совместимого API; по умолчанию — ProxyAPI, как в исходном проекте |
 | `MODEL_ID` | идентификатор модели |

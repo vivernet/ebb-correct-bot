@@ -25,7 +25,7 @@ Deno.serve((request) => {
   const url = new URL(request.url);
   if (url.pathname === "/health") return new Response("ok");
   if (url.pathname !== config.webhookPath || request.method !== "POST") {
-    return new Response("Not found", { status: 404 });
+    return new Response("Не найдено", { status: 404 });
   }
   return handleUpdate(request);
 });

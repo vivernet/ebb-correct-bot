@@ -53,13 +53,13 @@ function loadWebhookConfig(env = process.env) {
   try {
     parsedUrl = new URL(webhookUrl);
   } catch {
-    throw new Error("TELEGRAM_WEBHOOK_URL must be a valid HTTPS URL.");
+    throw new Error("TELEGRAM_WEBHOOK_URL должен содержать корректный HTTPS-адрес.");
   }
   if (parsedUrl.protocol !== "https:") {
-    throw new Error("TELEGRAM_WEBHOOK_URL must use HTTPS.");
+    throw new Error("TELEGRAM_WEBHOOK_URL должен использовать HTTPS.");
   }
   if (!/^[A-Za-z0-9_-]{1,256}$/.test(webhookSecret)) {
-    throw new Error("TELEGRAM_WEBHOOK_SECRET must contain 1-256 A-Z, a-z, 0-9, _ or - characters.");
+    throw new Error("TELEGRAM_WEBHOOK_SECRET должен содержать от 1 до 256 символов: букв A–Z и a–z, цифр, _ или -.");
   }
 
   return Object.freeze({ ...config, webhookUrl, webhookSecret, webhookPath: parsedUrl.pathname });
