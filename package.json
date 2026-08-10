@@ -10,7 +10,11 @@
     "test": "node --test",
     "check": "node --check src/index.js && node --check src/deno.js"
   },
-  "author": "",
+	"author": "vivernet <alex.1501@icloud.com>",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/vivernet/ebb-correct-bot"
+	},
   "license": "MIT",
   "dependencies": {
     "dotenv": "^16.4.5",
