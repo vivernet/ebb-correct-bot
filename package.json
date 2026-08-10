@@ -1,0 +1,21 @@
+{
+  "name": "ebb-correct-bot",
+  "version": "2.0.0",
+  "description": "Telegram-бот для корректуры русскоязычных текстов через OpenAI-совместимый API.",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "node --test",
+    "check": "node --check src/index.js"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "grammy": "^1.22.4"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
