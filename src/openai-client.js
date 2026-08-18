@@ -1,4 +1,4 @@
-import OpenAI from "openai";
+import OpenAI from "npm:openai";
 
 class OpenAiClient {
   constructor({ apiKey, baseUrl, model, promptCacheKey, maxOutputTokens = 1000 }) {
@@ -50,8 +50,9 @@ class OpenAiClient {
           },
         ],
       });
-    } catch {
-      throw new Error("Не удалось подключиться к сервису обработки текста.");
+    } catch (error) {
+      // Пробрасываем подробности ошибки, чтобы было видно реальную причину (сетевые/авторизация/несовместимость SDK).
+      throw new Error(`Не удалось подключиться к сервису обработки текста: ${error?.message || error}`);
     }
 
     const content = response?.output_text;

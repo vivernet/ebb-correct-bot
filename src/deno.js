@@ -3,7 +3,7 @@ import { createBot } from "./bot.js";
 import { loadWebhookConfig } from "./config.js";
 import { OpenAiClient } from "./openai-client.js";
 
-const config = loadWebhookConfig();
+const config = loadWebhookConfig(Deno.env.toObject());
 const editor = new OpenAiClient({
   apiKey: config.openaiApiKey,
   baseUrl: config.openaiBaseUrl,
