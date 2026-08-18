@@ -8,7 +8,6 @@ class OpenAiClient {
     this.client = new OpenAI({
       apiKey,
       baseURL: baseUrl,
-      timeout: 30_000,
     });
   }
 
@@ -17,7 +16,6 @@ class OpenAiClient {
     try {
       response = await this.client.responses.create({
         model: this.model,
-        temperature: 0.2,
         max_output_tokens: this.maxOutputTokens,
         store: false,
         prompt_cache_key: this.promptCacheKey,
