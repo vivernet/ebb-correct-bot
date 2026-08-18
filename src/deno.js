@@ -7,7 +7,7 @@ const config = loadWebhookConfig();
 const editor = new OpenAiClient({
   apiKey: config.openaiApiKey,
   baseUrl: config.openaiBaseUrl,
-  model: config.model,
+  model: config.openaiModel,
 });
 const bot = createBot(config, editor);
 const handleUpdate = webhookCallback(bot, "std/http", {

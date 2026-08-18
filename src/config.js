@@ -25,8 +25,8 @@ function parseBoolean(value, fallback) {
 }
 
 function loadConfig(env = process.env) {
-  const baseUrl = (env.OPENAI_BASE_URL || "https://api.openai.com/v1").replace(/\/+$/, "");
-  if (!/^https:\/\//.test(baseUrl)) {
+  const openaiBaseUrl = (env.OPENAI_BASE_URL || "https://api.openai.com/v1").replace(/\/+$/, "");
+  if (!/^https:\/\//.test(openaiBaseUrl)) {
     throw new Error("OPENAI_BASE_URL должен использовать HTTPS.");
   }
 
@@ -34,8 +34,8 @@ function loadConfig(env = process.env) {
     telegramToken: required("TELEGRAM_BOT_TOKEN", env.TELEGRAM_BOT_TOKEN),
     telegramApiRoot: env.TELEGRAM_BOT_API_URL?.trim() || undefined,
     openaiApiKey: required("OPENAI_API_KEY", env.OPENAI_API_KEY),
-    openaiBaseUrl: baseUrl,
-    model: required("MODEL_ID", env.MODEL_ID),
+    openaiBaseUrl: openaiBaseUrl,
+    openaiModel: required("OPENAI_MODEL", env.OPENAI_MODEL),
     allowedUserIds: parseUserIds(env.ALLOWED_USER_IDS),
     adminChatId: env.ADMIN_CHAT_ID?.trim() || undefined,
     deleteUnauthorizedMessages: parseBoolean(env.DELETE_UNAUTHORIZED_MESSAGES, true),
