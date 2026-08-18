@@ -24,6 +24,15 @@ function parseBoolean(value, fallback) {
   throw new Error("DELETE_UNAUTHORIZED_MESSAGES должен иметь значение true или false.");
 }
 
+function parsePositiveInt(value, fallback, varName) {
+  if (value === undefined || value === "") return fallback;
+  const parsed = Number(value);
+  if (!Number.isInteger(parsed) || parsed <= 0) {
+    throw new Error(`${varName} должен быть положительным целым числом.`);
+  }
+  return parsed;
+}
+
 function loadConfig(env = process.env) {
   const openaiBaseUrl = (env.OPENAI_BASE_URL || "https://api.openai.com/v1").replace(/\/+$/, "");
   if (!/^https:\/\//.test(openaiBaseUrl)) {
@@ -32,10 +41,12 @@ function loadConfig(env = process.env) {
 
   return Object.freeze({
     telegramToken: required("TELEGRAM_BOT_TOKEN", env.TELEGRAM_BOT_TOKEN),
-    telegramApiRoot: env.TELEGRAM_BOT_API_URL?.trim() || undefined,
+    telegramApiRoot: env.TELEGRAM_BOT_API_URL?.trim() || "https://api.telegram.org",
     openaiApiKey: required("OPENAI_API_KEY", env.OPENAI_API_KEY),
     openaiBaseUrl: openaiBaseUrl,
     openaiModel: required("OPENAI_MODEL", env.OPENAI_MODEL),
+    openaiPromptCacheKey: env.OPENAI_PROMPT_CACHE_KEY?.trim() || undefined,
+    openaiMaxOutputTokens: parsePositiveInt(env.OPENAI_MAX_OUTPUT_TOKENS, 1000, "OPENAI_MAX_OUTPUT_TOKENS"),
     allowedUserIds: parseUserIds(env.ALLOWED_USER_IDS),
     adminChatId: env.ADMIN_CHAT_ID?.trim() || undefined,
     deleteUnauthorizedMessages: parseBoolean(env.DELETE_UNAUTHORIZED_MESSAGES, true),
@@ -65,4 +76,4 @@ function loadWebhookConfig(env = process.env) {
   return Object.freeze({ ...config, webhookUrl, webhookSecret, webhookPath: parsedUrl.pathname });
 }
 
-export { loadConfig, loadWebhookConfig, parseBoolean, parseUserIds };
+export { loadConfig, loadWebhookConfig, parseBoolean, parsePositiveInt, parseUserIds };

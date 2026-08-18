@@ -8,7 +8,10 @@ const editor = new OpenAiClient({
   apiKey: config.openaiApiKey,
   baseUrl: config.openaiBaseUrl,
   model: config.openaiModel,
+  promptCacheKey: config.openaiPromptCacheKey,
+  maxOutputTokens: config.openaiMaxOutputTokens,
 });
+
 const bot = createBot(config, editor);
 const handleUpdate = webhookCallback(bot, "std/http", {
   secretToken: config.webhookSecret,

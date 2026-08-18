@@ -1,39 +1,60 @@
+import OpenAI from "openai";
+
 class OpenAiClient {
-  constructor({ apiKey, baseUrl, model, fetchImpl = globalThis.fetch }) {
-    this.apiKey = apiKey;
-    this.baseUrl = baseUrl;
+  constructor({ apiKey, baseUrl, model, promptCacheKey, maxOutputTokens = 1000 }) {
     this.model = model;
-    this.fetch = fetchImpl;
+    this.promptCacheKey = promptCacheKey;
+    this.maxOutputTokens = maxOutputTokens;
+    this.client = new OpenAI({
+      apiKey,
+      baseURL: baseUrl,
+      timeout: 30_000,
+    });
   }
 
   async editText(systemPrompt, text) {
     let response;
     try {
-      response = await this.fetch(`${this.baseUrl}/chat/completions`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${this.apiKey}`, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: this.model,
-          temperature: 0.2,
-          messages: [{ role: "system", content: systemPrompt }, { role: "user", content: text }],
-        }),
-        signal: AbortSignal.timeout(30_000),
+      response = await this.client.responses.create({
+        model: this.model,
+        temperature: 0.2,
+        max_output_tokens: this.maxOutputTokens,
+        store: false,
+        prompt_cache_key: this.promptCacheKey,
+        prompt_cache_options: {
+          mode: "explicit",
+        },
+        input: [
+          {
+            role: "developer",
+            type: "message",
+            content: [
+              {
+                type: "input_text",
+                text: systemPrompt,
+                prompt_cache_breakpoint: {
+                  mode: "explicit",
+                },
+              },
+            ],
+          },
+          {
+            role: "user",
+            type: "message",
+            content: [
+                {
+                  type: "input_text",
+                  text
+                }
+            ]
+          },
+        ],
       });
     } catch {
       throw new Error("Не удалось подключиться к сервису обработки текста.");
     }
 
-    if (!response.ok) {
-      throw new Error(`Сервис обработки текста вернул HTTP ${response.status}.`);
-    }
-
-    let payload;
-    try {
-      payload = await response.json();
-    } catch {
-      throw new Error("Сервис обработки текста вернул некорректный ответ.");
-    }
-    const content = payload?.choices?.[0]?.message?.content;
+    const content = response?.output_text;
     if (typeof content !== "string" || !content.trim()) {
       throw new Error("Сервис обработки текста вернул пустой ответ.");
     }

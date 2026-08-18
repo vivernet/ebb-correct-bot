@@ -7,7 +7,9 @@ async function main() {
   const editor = new OpenAiClient({
     apiKey: config.openaiApiKey,
     baseUrl: config.openaiBaseUrl,
-    model: config.model,
+    model: config.openaiModel,
+    promptCacheKey: config.openaiPromptCacheKey,
+    maxOutputTokens: config.openaiMaxOutputTokens,
   });
   const bot = createBot(config, editor);
 

@@ -8,21 +8,39 @@ test("отправляет инструкцию редактора и возвр
     apiKey: "secret",
     baseUrl: "https://example.test/v1",
     model: "test-model",
-    fetchImpl: async (url, options) => {
-      request = { url, options };
-      return new Response(JSON.stringify({
-        choices: [{ message: { content: "  Исправленный текст  " } }],
-      }), { status: 200 });
-    },
+    promptCacheKey: "cache-key-1",
+    maxOutputTokens: 777,
   });
+
+  const createResponse = {
+    output_text: "  Исправленный текст  ",
+  };
+
+  client.client.responses.create = async (payload) => {
+    request = payload;
+    return createResponse;
+  };
 
   const result = await client.editText("Редактируй", "Черновик");
   assert.equal(result, "Исправленный текст");
-  assert.equal(request.url, "https://example.test/v1/chat/completions");
-  assert.equal(request.options.headers.Authorization, "Bearer secret");
-  assert.deepEqual(JSON.parse(request.options.body).messages, [
-    { role: "system", content: "Редактируй" },
-    { role: "user", content: "Черновик" },
+  assert.equal(request.model, "test-model");
+  assert.equal(request.max_output_tokens, 777);
+  assert.equal(request.store, false);
+  assert.equal(request.prompt_cache_key, "cache-key-1");
+  assert.deepEqual(request.prompt_cache_options, { mode: "explicit" });
+  assert.deepEqual(request.input, [
+    {
+      role: "developer",
+      content: [
+        { type: "input_text", text: "Редактируй" },
+        {
+          type: "input_text",
+          text: "",
+          prompt_cache_breakpoint: { mode: "explicit" },
+        },
+      ],
+    },
+    { role: "user", content: [{ type: "input_text", text: "Черновик" }] },
   ]);
 });
 
@@ -31,7 +49,9 @@ test("отклоняет некорректный ответ провайдер�
     apiKey: "secret",
     baseUrl: "https://example.test/v1",
     model: "test-model",
-    fetchImpl: async () => new Response("{}", { status: 200 }),
   });
+
+  client.client.responses.create = async () => ({});
+
   await assert.rejects(() => client.editText("prompt", "text"), /пустой ответ/);
 });

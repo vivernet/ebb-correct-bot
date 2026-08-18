@@ -35,7 +35,9 @@
 | `TELEGRAM_BOT_API_URL` | Необязательный адрес самостоятельно развёрнутого Local Telegram Bot API. |
 | `OPENAI_API_KEY` | Ключ API провайдера. |
 | `OPENAI_BASE_URL` | Базовый URL OpenAI-совместимого API (по умолчанию: `https://api.openai.com/v1`). |
-| `MODEL_ID` | Идентификатор модели. |
+| `OPENAI_MODEL` | Идентификатор модели. |
+| `OPENAI_PROMPT_CACHE_KEY` | Необязательный ключ prompt cache для `responses.create`. |
+| `OPENAI_MAX_OUTPUT_TOKENS` | Максимум выходных токенов (`max_output_tokens`) для `responses.create` (по умолчанию: `1000`). |
 | `ALLOWED_USER_IDS` | Разрешённые идентификаторы пользователей Telegram через запятую. |
 | `ADMIN_CHAT_ID` | Необязательный чат для уведомлений о попытках доступа. |
 | `DELETE_UNAUTHORIZED_MESSAGES` | Удалять сообщения неразрешённых пользователей (`true` по умолчанию). |
