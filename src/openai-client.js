@@ -9,6 +9,22 @@ function getErrorMessage(error) {
 }
 
 /**
+ * Создаёт анонимный и стабильный идентификатор безопасности из Chat ID Telegram.
+ *
+ * @param {number|string} chatId - Идентификатор чата Telegram.
+ * @returns {Promise<string>} Идентификатор в формате `user_<SHA-256 в base64url>`.
+ */
+async function createSafetyIdentifier(chatId) {
+  const source = new TextEncoder().encode(String(chatId));
+  const digest = await globalThis.crypto.subtle.digest("SHA-256", source);
+  const hash = btoa(String.fromCharCode(...new Uint8Array(digest)))
+    .replaceAll("+", "-")
+    .replaceAll("/", "_")
+    .replaceAll("=", "");
+  return `user_${hash}`;
+}
+
+/**
  * Создаёт функцию корректуры текста через OpenAI-совместимый Responses API.
  *
  * @param {object} [options]
@@ -20,19 +36,20 @@ function getErrorMessage(error) {
  * @param {number} [options.maxOutputTokens=1000] - Максимум выходных токенов.
  * @param {number} [options.timeoutMs=30000] - Таймаут запроса в миллисекундах.
  * @param {object} [options.client] - Готовый клиент OpenAI (для подмены в тестах).
- * @returns {(systemPrompt: string, text: string) => Promise<{text: string, usage: (object|null), responseId: (string|null), model: string}>} Асинхронная функция корректуры текста.
+ * @returns {(systemPrompt: string, text: string, safetyIdentifier: string) => Promise<{text: string, usage: (object|null), responseId: (string|null), model: string}>} Асинхронная функция корректуры текста.
  */
 function createTextCorrector({ OpenAIClass = OpenAI, apiKey, baseUrl, model, promptCacheKey, maxOutputTokens = 1000, timeoutMs = 30_000, client } = {}) {
   const openai = client ?? new OpenAIClass({ apiKey, baseURL: baseUrl, timeout: timeoutMs, maxRetries: 0 });
 
-  return async function correctText(systemPrompt, text) {
+  return async function correctText(systemPrompt, text, safetyIdentifier) {
     try {
       const response = await openai.responses.create({
         model,
         max_output_tokens: maxOutputTokens,
         store: false,
-        prompt_cache_key: promptCacheKey,
         instructions: systemPrompt,
+        prompt_cache_key: promptCacheKey,
+        safety_identifier: safetyIdentifier,
         input: text,
       });
       const output = response?.output_text;
@@ -56,4 +73,4 @@ function createTextCorrector({ OpenAIClass = OpenAI, apiKey, baseUrl, model, pro
 
 const { default: OpenAI } = await import(globalThis.Deno ? "npm:openai" : "openai");
 
-export { createTextCorrector };
+export { createSafetyIdentifier, createTextCorrector };

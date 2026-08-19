@@ -1,4 +1,5 @@
 import { Bot, GrammyError, HttpError, InlineKeyboard } from "grammy";
+import { createSafetyIdentifier } from "./openai-client.js";
 import { SYSTEM_PROMPT } from "./prompts.js";
 import { splitForTelegram } from "./text.js";
 
@@ -69,7 +70,7 @@ function escapeHtml(value) {
  * вызов корректуры текста, разбиение длинных ответов и логирование.
  *
  * @param {object} config - Конфигурация бота (см. loadConfig/loadWebhookConfig из config.js).
- * @param {(systemPrompt: string, text: string) => Promise<{text: string, usage: (object|null), responseId: (string|null), model: string}>} correctText - Функция корректуры текста.
+ * @param {(systemPrompt: string, text: string, safetyIdentifier: string) => Promise<{text: string, usage: (object|null), responseId: (string|null), model: string}>} correctText - Функция корректуры текста.
  * @param {Console} [logger=console] - Логгер для вывода в консоль (подменяется в тестах).
  * @returns {Bot} Настроенный, но ещё не запущенный экземпляр grammY-бота.
  */
@@ -161,7 +162,8 @@ function createBot(config, correctText, logger = console) {
     telegramLog("info", "Начата обработка текста", { ...baseDetails, active_requests: activeRequests });
     try {
       await ctx.replyWithChatAction("typing");
-      const result = await correctText(SYSTEM_PROMPT, text);
+      const safetyIdentifier = await createSafetyIdentifier(chat.id);
+      const result = await correctText(SYSTEM_PROMPT, text, safetyIdentifier);
       const editedText = result.text;
       for (const [index, part] of splitForTelegram(editedText).entries()) {
         const options =
