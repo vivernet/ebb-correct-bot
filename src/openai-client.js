@@ -1,64 +1,30 @@
-import OpenAI from "npm:openai";
+const { default: OpenAI } = await import(globalThis.Deno ? "npm:openai" : "openai");
 
-class OpenAiClient {
-  constructor({ apiKey, baseUrl, model, promptCacheKey, maxOutputTokens = 1000 }) {
-    this.model = model;
-    this.promptCacheKey = promptCacheKey;
-    this.maxOutputTokens = maxOutputTokens;
-    this.client = new OpenAI({
-      apiKey,
-      baseURL: baseUrl,
-    });
-  }
-
-  async editText(systemPrompt, text) {
-    let response;
-    try {
-      response = await this.client.responses.create({
-        model: this.model,
-        max_output_tokens: this.maxOutputTokens,
-        store: false,
-        prompt_cache_key: this.promptCacheKey,
-        prompt_cache_options: {
-          mode: "explicit",
-        },
-        input: [
-          {
-            role: "developer",
-            type: "message",
-            content: [
-              {
-                type: "input_text",
-                text: systemPrompt,
-                prompt_cache_breakpoint: {
-                  mode: "explicit",
-                },
-              },
-            ],
-          },
-          {
-            role: "user",
-            type: "message",
-            content: [
-                {
-                  type: "input_text",
-                  text
-                }
-            ]
-          },
-        ],
-      });
-    } catch (error) {
-      // Пробрасываем подробности ошибки, чтобы было видно реальную причину (сетевые/авторизация/несовместимость SDK).
-      throw new Error(`Не удалось подключиться к сервису обработки текста: ${error?.message || error}`);
-    }
-
-    const content = response?.output_text;
-    if (typeof content !== "string" || !content.trim()) {
-      throw new Error("Сервис обработки текста вернул пустой ответ.");
-    }
-    return content.trim();
-  }
+function getErrorMessage(error) {
+  return error instanceof Error ? error.message : String(error);
 }
 
-export { OpenAiClient };
+function createTextCorrector({ OpenAIClass = OpenAI, apiKey, baseUrl, model, promptCacheKey, maxOutputTokens = 1000, timeoutMs = 30_000, client } = {}) {
+  const openai = client ?? new OpenAIClass({ apiKey, baseURL: baseUrl, timeout: timeoutMs, maxRetries: 0 });
+
+  return async function correctText(systemPrompt, text) {
+    try {
+      const response = await openai.responses.create({
+        model,
+        max_output_tokens: maxOutputTokens,
+        store: false,
+        prompt_cache_key: promptCacheKey,
+        instructions: systemPrompt,
+        input: text,
+      });
+      const output = response?.output_text;
+      if (typeof output !== "string" || !output.trim()) throw new Error("Сервис обработки текста вернул пустой ответ.");
+      return output.trim();
+    } catch (error) {
+      if (error instanceof Error && error.message.includes("пустой ответ")) throw error;
+      throw new Error(`Не удалось обработать текст через OpenAI: ${getErrorMessage(error)}`, { cause: error });
+    }
+  };
+}
+
+export { createTextCorrector };
