@@ -2,44 +2,117 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
+/**
+ * Возвращает обязательное значение переменной окружения или бросает ошибку, если оно не задано.
+ *
+ * @param {string} name - Имя переменной окружения (используется в сообщении об ошибке).
+ * @param {string|undefined} value - Значение переменной окружения.
+ * @returns {string} Значение переменной без пробелов по краям.
+ */
 function required(name, value) {
-  if (!value || !String(value).trim()) throw new Error(`Не задана обязательная переменная окружения: ${name}`);
+  if (!value || !String(value).trim()) {
+    throw new Error(`Не задана обязательная переменная окружения: ${name}`);
+  }
   return String(value).trim();
 }
 
+/**
+ * Разбирает список числовых идентификаторов пользователей Telegram, разделённых запятыми.
+ *
+ * @param {string} [value=""] - Строка со списком идентификаторов.
+ * @returns {Set<number>} Множество разрешённых идентификаторов пользователей.
+ */
 function parseUserIds(value = "") {
-  const ids = String(value).split(",").map((item) => item.trim()).filter(Boolean);
-  if (ids.some((id) => !/^\d+$/.test(id))) throw new Error("ALLOWED_USER_IDS должен содержать список числовых идентификаторов пользователей Telegram, разделённых запятыми.");
+  const ids = String(value)
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+  if (ids.some((id) => !/^\d+$/.test(id))) {
+    throw new Error("ALLOWED_USER_IDS должен содержать список числовых идентификаторов пользователей Telegram, разделённых запятыми.");
+  }
   return new Set(ids.map(Number));
 }
 
+/**
+ * Разбирает и валидирует числовой идентификатор чата Telegram.
+ *
+ * @param {string|undefined} value - Значение переменной окружения.
+ * @param {string} varName - Имя переменной окружения (используется в сообщении об ошибке).
+ * @returns {string|undefined} Идентификатор чата или undefined, если значение не задано.
+ */
 function parseTelegramChatId(value, varName) {
-  if (value === undefined || value === "") return undefined;
+  if (value === undefined || value === "") {
+    return undefined;
+  }
   const parsed = String(value).trim();
-  if (!/^-?\d+$/.test(parsed) || parsed === "0") throw new Error(`${varName} должен быть числовым идентификатором чата Telegram.`);
+  if (!/^-?\d+$/.test(parsed) || parsed === "0") {
+    throw new Error(`${varName} должен быть числовым идентификатором чата Telegram.`);
+  }
   return parsed;
 }
 
+/**
+ * Разбирает булево значение переменной окружения ("true" / "false").
+ *
+ * @param {string|undefined} value - Значение переменной окружения.
+ * @param {boolean} fallback - Значение по умолчанию, если переменная не задана.
+ * @param {string} [varName="значение"] - Имя переменной окружения (используется в сообщении об ошибке).
+ * @returns {boolean} Разобранное булево значение.
+ */
 function parseBoolean(value, fallback, varName = "значение") {
-  if (value === undefined || value === "") return fallback;
-  if (value === "true") return true;
-  if (value === "false") return false;
+  if (value === undefined || value === "") {
+    return fallback;
+  }
+  if (value === "true") {
+    return true;
+  }
+  if (value === "false") {
+    return false;
+  }
   throw new Error(`${varName} должен иметь значение true или false.`);
 }
 
+/**
+ * Разбирает положительное целое число из переменной окружения.
+ *
+ * @param {string|undefined} value - Значение переменной окружения.
+ * @param {number} fallback - Значение по умолчанию, если переменная не задана.
+ * @param {string} varName - Имя переменной окружения (используется в сообщении об ошибке).
+ * @returns {number} Разобранное положительное целое число.
+ */
 function parsePositiveInt(value, fallback, varName) {
-  if (value === undefined || value === "") return fallback;
+  if (value === undefined || value === "") {
+    return fallback;
+  }
   const parsed = Number(value);
-  if (!Number.isInteger(parsed) || parsed <= 0) throw new Error(`${varName} должен быть положительным целым числом.`);
+  if (!Number.isInteger(parsed) || parsed <= 0) {
+    throw new Error(`${varName} должен быть положительным целым числом.`);
+  }
   return parsed;
 }
 
+/**
+ * Разбирает и нормализует HTTPS-адрес, отбрасывая завершающие слэши.
+ *
+ * @param {string|undefined} value - Значение переменной окружения.
+ * @param {string} varName - Имя переменной окружения (используется в сообщении об ошибке).
+ * @param {string} fallback - Значение по умолчанию, если переменная не задана.
+ * @returns {string} Нормализованный HTTPS-адрес.
+ */
 function parseHttpsUrl(value, varName, fallback) {
   const url = (value || fallback).trim().replace(/\/+$/, "");
-  if (!/^https:\/\//.test(url)) throw new Error(`${varName} должен использовать HTTPS.`);
+  if (!/^https:\/\//.test(url)) {
+    throw new Error(`${varName} должен использовать HTTPS.`);
+  }
   return url;
 }
 
+/**
+ * Загружает и валидирует конфигурацию бота из переменных окружения.
+ *
+ * @param {NodeJS.ProcessEnv} [env=process.env] - Источник переменных окружения.
+ * @returns {Readonly<object>} Замороженный объект конфигурации.
+ */
 function loadConfig(env = process.env) {
   const requestTimeoutMs = parsePositiveInt(env.REQUEST_TIMEOUT_MS, 30_000, "REQUEST_TIMEOUT_MS");
   return Object.freeze({
@@ -62,16 +135,36 @@ function loadConfig(env = process.env) {
   });
 }
 
+/**
+ * Загружает конфигурацию бота вместе с параметрами, обязательными для webhook-режима (Deno Deploy).
+ *
+ * @param {NodeJS.ProcessEnv} [env=process.env] - Источник переменных окружения.
+ * @returns {Readonly<object>} Замороженный объект конфигурации с полями webhookUrl, webhookSecret, webhookPath и webhookCallbackTimeoutMs.
+ */
 function loadWebhookConfig(env = process.env) {
   const config = loadConfig(env);
   const webhookUrl = required("TELEGRAM_WEBHOOK_URL", config.webhookUrl);
   const webhookSecret = required("TELEGRAM_WEBHOOK_SECRET", config.webhookSecret);
   let parsedUrl;
-  try { parsedUrl = new URL(webhookUrl); } catch { throw new Error("TELEGRAM_WEBHOOK_URL должен содержать корректный HTTPS-адрес."); }
-  if (parsedUrl.protocol !== "https:") throw new Error("TELEGRAM_WEBHOOK_URL должен использовать HTTPS.");
-  if (!/^[A-Za-z0-9_-]{1,256}$/.test(webhookSecret)) throw new Error("TELEGRAM_WEBHOOK_SECRET должен содержать от 1 до 256 символов: букв A–Z и a–z, цифр, _ или -.");
-  const webhookCallbackTimeoutMs = parsePositiveInt(env.WEBHOOK_CALLBACK_TIMEOUT_MS, Math.min(config.requestTimeoutMs + 5_000, 55_000), "WEBHOOK_CALLBACK_TIMEOUT_MS");
-  if (webhookCallbackTimeoutMs < config.requestTimeoutMs) throw new Error("WEBHOOK_CALLBACK_TIMEOUT_MS не должен быть меньше REQUEST_TIMEOUT_MS.");
+  try {
+    parsedUrl = new URL(webhookUrl);
+  } catch {
+    throw new Error("TELEGRAM_WEBHOOK_URL должен содержать корректный HTTPS-адрес.");
+  }
+  if (parsedUrl.protocol !== "https:") {
+    throw new Error("TELEGRAM_WEBHOOK_URL должен использовать HTTPS.");
+  }
+  if (!/^[A-Za-z0-9_-]{1,256}$/.test(webhookSecret)) {
+    throw new Error("TELEGRAM_WEBHOOK_SECRET должен содержать от 1 до 256 символов: букв A–Z и a–z, цифр, _ или -.");
+  }
+  const webhookCallbackTimeoutMs = parsePositiveInt(
+    env.WEBHOOK_CALLBACK_TIMEOUT_MS,
+    Math.min(config.requestTimeoutMs + 5_000, 55_000),
+    "WEBHOOK_CALLBACK_TIMEOUT_MS",
+  );
+  if (webhookCallbackTimeoutMs < config.requestTimeoutMs) {
+    throw new Error("WEBHOOK_CALLBACK_TIMEOUT_MS не должен быть меньше REQUEST_TIMEOUT_MS.");
+  }
   return Object.freeze({ ...config, webhookUrl, webhookSecret, webhookPath: parsedUrl.pathname, webhookCallbackTimeoutMs });
 }
 
