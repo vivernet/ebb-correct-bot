@@ -1,5 +1,3 @@
-const { default: OpenAI } = await import(globalThis.Deno ? "npm:openai" : "openai");
-
 function getErrorMessage(error) {
   return error instanceof Error ? error.message : String(error);
 }
@@ -31,5 +29,7 @@ function createTextCorrector({ OpenAIClass = OpenAI, apiKey, baseUrl, model, pro
     }
   };
 }
+
+const { default: OpenAI } = await import(globalThis.Deno ? "npm:openai" : "openai");
 
 export { createTextCorrector };

@@ -6,7 +6,7 @@ import { createTextCorrector } from "./openai-client.js";
 const config = loadWebhookConfig(Deno.env.toObject());
 const correctText = createTextCorrector({ apiKey: config.openaiApiKey, baseUrl: config.openaiBaseUrl, model: config.openaiModel, promptCacheKey: config.openaiPromptCacheKey, maxOutputTokens: config.openaiMaxOutputTokens, timeoutMs: config.requestTimeoutMs });
 const bot = createBot(config, correctText);
-const handleUpdate = webhookCallback(bot, "std/http", { secretToken: config.webhookSecret, onTimeout: "return", timeoutMilliseconds: config.requestTimeoutMs });
+const handleUpdate = webhookCallback(bot, "std/http", { secretToken: config.webhookSecret, onTimeout: "throw", timeoutMilliseconds: config.webhookCallbackTimeoutMs });
 await bot.api.setWebhook(config.webhookUrl, { secret_token: config.webhookSecret, allowed_updates: ["message"] });
 Deno.serve((request) => {
   const url = new URL(request.url);

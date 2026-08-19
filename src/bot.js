@@ -16,14 +16,25 @@ function formatUsage(usage) {
   return `токены: input=${input}, output=${output}, total=${total}${cached === undefined ? "" : `, cached=${cached}`}`;
 }
 
+function userErrorMessage(error) {
+  const cause = error instanceof Error ? error.cause : undefined;
+  const status = cause?.status ?? cause?.statusCode;
+  if (cause?.name === "APIConnectionTimeoutError" || cause?.name === "AbortError" || status === 408 || status === 504) return "⌛ Сервис обработки отвечает слишком долго. Попробуйте ещё раз через минуту.";
+  if (status === 429) return "⏳ Сервис обработки временно перегружен. Попробуйте ещё раз через минуту.";
+  if (status >= 500) return "⚠️ Сервис обработки временно недоступен. Попробуйте ещё раз позже.";
+  return "‼️ Не удалось обработать текст. Попробуйте ещё раз.";
+}
+
 function createBot(config, correctText, logger = console) {
   const bot = new Bot(config.telegramToken, { client: { apiRoot: config.telegramApiRoot } });
+  const activeChats = new Set();
+  let activeRequests = 0;
 
   async function telegramLog(level, message, details = {}) {
     const line = `${message}${details.error ? ` | ${errorDetails(details.error)}` : ""}`;
     logger[level]?.(line);
     if (!config.telegramLogChatId) return;
-    const fields = Object.entries(details).filter(([, value]) => value !== undefined && value !== null && value !== "").map(([key, value]) => `${key}: ${value}`).join("\n");
+    const fields = Object.entries(details).filter(([, value]) => value !== undefined && value !== null && value !== "").map(([key, value]) => `${key}: ${value instanceof Error ? errorDetails(value) : value}`).join("\n");
     const body = `<b>[${level.toUpperCase()}]</b> ${escapeHtml(message)}${fields ? `\n<pre>${escapeHtml(fields).slice(0, 3500)}</pre>` : ""}`;
     await bot.api.sendMessage(config.telegramLogChatId, body, { parse_mode: "HTML", disable_web_page_preview: true }).catch((sendError) => logger.error("Не удалось отправить лог в Telegram.", sendError));
   }
@@ -48,8 +59,21 @@ function createBot(config, correctText, logger = console) {
       await ctx.reply(`Текст слишком длинный. Максимальный размер: ${config.inputMaxLength} символов.`, { reply_parameters: { message_id: messageId } });
       return;
     }
+    if (activeChats.has(chat.id)) {
+      await telegramLog("info", "Отклонён параллельный запрос в том же чате", baseDetails);
+      await ctx.reply("⏳ Предыдущее сообщение ещё обрабатывается. Пожалуйста, дождитесь ответа.", { reply_parameters: { message_id: messageId } });
+      return;
+    }
+    if (activeRequests >= config.maxConcurrentRequests) {
+      await telegramLog("warn", "Достигнут лимит одновременных запросов", { ...baseDetails, active_requests: activeRequests });
+      await ctx.reply("⏳ Бот сейчас обрабатывает другие сообщения. Попробуйте ещё раз через минуту.", { reply_parameters: { message_id: messageId } });
+      return;
+    }
+
     const startedAt = Date.now();
-    await telegramLog("info", "Начата обработка текста", baseDetails);
+    activeChats.add(chat.id);
+    activeRequests += 1;
+    await telegramLog("info", "Начата обработка текста", { ...baseDetails, active_requests: activeRequests });
     try {
       await ctx.replyWithChatAction("typing");
       const result = await correctText(SYSTEM_PROMPT, text);
@@ -61,7 +85,10 @@ function createBot(config, correctText, logger = console) {
       await telegramLog("info", "Текст обработан", { ...baseDetails, duration_ms: Date.now() - startedAt, output_chars: editedText.length, response_id: result.responseId, model: result.model, usage: formatUsage(result.usage) });
     } catch (error) {
       await telegramLog("error", "Не удалось обработать текст", { ...baseDetails, duration_ms: Date.now() - startedAt, error });
-      await ctx.reply("‼️ Не удалось обработать текст. Попробуйте ещё раз.", { reply_parameters: { message_id: messageId } }).catch((replyError) => telegramLog("error", "Не удалось отправить сообщение об ошибке", { ...baseDetails, error: replyError }));
+      await ctx.reply(userErrorMessage(error), { reply_parameters: { message_id: messageId } }).catch((replyError) => telegramLog("error", "Не удалось отправить сообщение об ошибке", { ...baseDetails, error: replyError }));
+    } finally {
+      activeChats.delete(chat.id);
+      activeRequests -= 1;
     }
   });
 
@@ -70,4 +97,4 @@ function createBot(config, correctText, logger = console) {
 }
 
 function escapeHtml(value) { return String(value).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;"); }
-export { createBot, errorDetails, formatUsage };
+export { createBot, errorDetails, formatUsage, userErrorMessage };

@@ -8,6 +8,7 @@ async function main() {
   const bot = createBot(config, correctText);
   process.once("SIGINT", () => bot.stop());
   process.once("SIGTERM", () => bot.stop());
-  await bot.start({ drop_pending_updates: false });
+  await bot.start({ drop_pending_updates: false, allowed_updates: ["message"] });
 }
+
 main().catch((error) => { console.error("Не удалось запустить бота.", error); process.exitCode = 1; });
