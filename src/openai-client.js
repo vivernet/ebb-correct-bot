@@ -19,7 +19,12 @@ function createTextCorrector({ OpenAIClass = OpenAI, apiKey, baseUrl, model, pro
       });
       const output = response?.output_text;
       if (typeof output !== "string" || !output.trim()) throw new Error("Сервис обработки текста вернул пустой ответ.");
-      return output.trim();
+      return {
+        text: output.trim(),
+        usage: response.usage ?? null,
+        responseId: response.id ?? null,
+        model: response.model ?? model,
+      };
     } catch (error) {
       if (error instanceof Error && error.message.includes("пустой ответ")) throw error;
       throw new Error(`Не удалось обработать текст через OpenAI: ${getErrorMessage(error)}`, { cause: error });

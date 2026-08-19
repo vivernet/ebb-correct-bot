@@ -5,7 +5,8 @@ import { createTextCorrector } from "../src/openai-client.js";
 test("отправляет инструкцию и возвращает текст", async () => {
   let request;
   const correctText = createTextCorrector({ apiKey: "secret", baseUrl: "https://example.test/v1", model: "test-model", promptCacheKey: "cache-key-1", maxOutputTokens: 777, client: { responses: { create: async (payload) => { request = payload; return { output_text: "  Исправленный текст  " }; } } } });
-  assert.equal(await correctText("Редактируй", "Черновик"), "Исправленный текст");
+  const result = await correctText("Редактируй", "Черновик");
+  assert.equal(result.text, "Исправленный текст");
   assert.equal(request.instructions, "Редактируй");
   assert.equal(request.input, "Черновик");
   assert.equal(request.prompt_cache_key, "cache-key-1");
