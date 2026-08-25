@@ -45,12 +45,40 @@ function createTextCorrector({ OpenAIClass = OpenAI, apiKey, baseUrl, model, pro
     try {
       const response = await openai.responses.create({
         model,
-        max_output_tokens: maxOutputTokens,
         store: false,
-        instructions: systemPrompt,
         prompt_cache_key: promptCacheKey,
+        prompt_cache_options: {
+          mode: "explicit",
+          ttl: "30m",
+        },
+        reasoning: {
+          effort: "none",
+        },
+        max_output_tokens: maxOutputTokens,
+        input: [
+          {
+            role: "developer",
+            content: [
+              {
+                type: "input_text",
+                text: systemPrompt,
+                prompt_cache_breakpoint: {
+                  mode: "explicit",
+                },
+              },
+            ],
+          },
+          {
+            role: "user",
+            content: [
+              {
+                type: "input_text",
+                text: text,
+              },
+            ],
+          },
+        ],
         safety_identifier: safetyIdentifier,
-        input: text,
       });
       const output = response?.output_text;
       if (typeof output !== "string" || !output.trim()) {
