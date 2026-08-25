@@ -20,17 +20,18 @@ function errorDetails(error) {
  * Форматирует объект usage ответа модели в читаемую строку с числом токенов.
  *
  * @param {object|null|undefined} usage - Объект usage из ответа OpenAI (Responses или Chat Completions API).
- * @returns {string} Строка вида "токены: input=..., output=..., total=...".
+ * @returns {string} Строка вида "input=..., output=..., total=..., cached=..., cache_write=...".
  */
 function formatUsage(usage) {
   if (!usage) {
-    return "токены: данные не предоставлены провайдером";
+    return "данные не предоставлены провайдером";
   }
   const input = usage.input_tokens ?? usage.prompt_tokens ?? "?";
   const output = usage.output_tokens ?? usage.completion_tokens ?? "?";
   const total = usage.total_tokens ?? "?";
   const cached = usage.input_tokens_details?.cached_tokens ?? usage.prompt_tokens_details?.cached_tokens;
-  return `токены: input=${input}, output=${output}, total=${total}${cached === undefined ? "" : `, cached=${cached}`}`;
+  const cacheWrite = usage.input_tokens_details?.cache_write_tokens ?? usage.prompt_tokens_details?.cache_write_tokens;
+  return `input=${input}, output=${output}, total=${total}${cached === undefined ? "" : `, cached=${cached}`}${cacheWrite === undefined ? "" : `, cache_write=${cacheWrite}`}`;
 }
 
 /**
@@ -182,6 +183,7 @@ function createBot(config, correctText, logger = console) {
         output_chars: editedText.length,
         response_id: result.responseId,
         model: result.model,
+        safety_identifier: safetyIdentifier,
         usage: formatUsage(result.usage),
       });
     } catch (error) {

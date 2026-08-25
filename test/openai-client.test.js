@@ -13,9 +13,25 @@ test("отправляет инструкцию и возвращает текс
   const correctText = createTextCorrector({ apiKey: "secret", baseUrl: "https://example.test/v1", model: "test-model", promptCacheKey: "cache-key-1", maxOutputTokens: 777, client: { responses: { create: async (payload) => { request = payload; return { output_text: "  Исправленный текст  " }; } } } });
   const result = await correctText("Редактируй", "Черновик", "user_123456");
   assert.equal(result.text, "Исправленный текст");
-  assert.equal(request.instructions, "Редактируй");
-  assert.equal(request.input, "Черновик");
+  assert.deepEqual(request.input, [
+    {
+      role: "developer",
+      content: [
+        {
+          type: "input_text",
+          text: "Редактируй",
+          prompt_cache_breakpoint: { mode: "explicit" },
+        },
+      ],
+    },
+    {
+      role: "user",
+      content: [{ type: "input_text", text: "Черновик" }],
+    },
+  ]);
   assert.equal(request.prompt_cache_key, "cache-key-1");
+  assert.deepEqual(request.prompt_cache_options, { mode: "explicit", ttl: "30m" });
+  assert.equal(request.max_output_tokens, 777);
   assert.equal(request.safety_identifier, "user_123456");
 });
 
