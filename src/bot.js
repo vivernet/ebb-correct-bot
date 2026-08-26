@@ -135,7 +135,7 @@ function createBot(config, correctText, logger = console) {
 
     if (!config.allowedUserIds.has(userId)) {
       telegramLog("warn", "Неизвестный пользователь", baseDetails);
-      await alertAdmin(`<b>Неизвестный пользователь</b>\nUser ID: <code>${userId}</code>\nChat ID: <code>${chat.id}</code>`);
+      await alertAdmin(`<tg-emoji emoji-id="5447644880824181073">⚠️</tg-emoji> <b>Неизвестный пользователь</b>\nUser ID: <code>${userId}</code>\nChat ID: <code>${chat.id}</code>`);
       if (config.deleteUnauthorizedMessages) {
         await ctx.deleteMessage().catch((error) => telegramLog("warn", "Не удалось удалить сообщение неизвестного пользователя", { ...baseDetails, error }));
       }
@@ -143,24 +143,24 @@ function createBot(config, correctText, logger = console) {
     }
     if (text.length > config.inputMaxLength) {
       telegramLog("warn", "Отклонён слишком длинный текст", baseDetails);
-      await ctx.reply(`Текст слишком длинный. Максимальный размер: ${config.inputMaxLength} символов.`, { reply_parameters: { message_id: messageId } });
+      await ctx.reply(`<tg-emoji emoji-id="5440660757194744323">‼️</tg-emoji> Текст слишком длинный. Максимальный размер: ${config.inputMaxLength} символов.`, { reply_parameters: { message_id: messageId }, parse_mode: "HTML" });
       return;
     }
     if (activeChats.has(chat.id)) {
       telegramLog("info", "Отклонён параллельный запрос в том же чате", baseDetails);
-      await ctx.reply("⏳ Предыдущее сообщение ещё обрабатывается. Пожалуйста, дождитесь ответа.", { reply_parameters: { message_id: messageId } });
+      await ctx.reply("<tg-emoji emoji-id="5386367538735104399">⌛️</tg-emoji> Предыдущее сообщение ещё обрабатывается. Пожалуйста, дождитесь ответа.", { reply_parameters: { message_id: messageId }, parse_mode: "HTML" });
       return;
     }
     if (activeRequests >= config.maxConcurrentRequests) {
       telegramLog("warn", "Достигнут лимит одновременных запросов", { ...baseDetails, active_requests: activeRequests });
-      await ctx.reply("⏳ Бот сейчас обрабатывает другие сообщения. Попробуйте ещё раз через минуту.", { reply_parameters: { message_id: messageId } });
+      await ctx.reply("<tg-emoji emoji-id="5386367538735104399">⌛️</tg-emoji> Бот сейчас обрабатывает другие сообщения. Попробуйте ещё раз через минуту.", { reply_parameters: { message_id: messageId }, parse_mode: "HTML" });
       return;
     }
 
     const startedAt = Date.now();
     activeChats.add(chat.id);
     activeRequests += 1;
-    telegramLog("info", "Начата обработка текста", { ...baseDetails, active_requests: activeRequests });
+    //telegramLog("info", "Начата обработка текста", { ...baseDetails, active_requests: activeRequests });
     try {
       await ctx.replyWithChatAction("typing");
       const safetyIdentifier = await createSafetyIdentifier(chat.id);
@@ -188,7 +188,7 @@ function createBot(config, correctText, logger = console) {
       });
     } catch (error) {
       telegramLog("error", "Не удалось обработать текст", { ...baseDetails, duration_ms: Date.now() - startedAt, error });
-      await ctx.reply(userErrorMessage(error), { reply_parameters: { message_id: messageId } }).catch((replyError) => telegramLog("error", "Не удалось отправить сообщение об ошибке", { ...baseDetails, error: replyError }));
+      await ctx.reply(`<tg-emoji emoji-id="5440660757194744323">‼️</tg-emoji> ` + userErrorMessage(error), { reply_parameters: { message_id: messageId }, parse_mode: "HTML" }).catch((replyError) => telegramLog("error", "Не удалось отправить сообщение об ошибке", { ...baseDetails, error: replyError }));
     } finally {
       activeChats.delete(chat.id);
       activeRequests -= 1;
