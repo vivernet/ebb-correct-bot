@@ -1,3 +1,5 @@
+import { createSafetyIdentifier } from "./safety-identifier.js";
+
 /**
  * Извлекает текст сообщения об ошибке из значения произвольного типа.
  *
@@ -6,22 +8,6 @@
  */
 function getErrorMessage(error) {
   return error instanceof Error ? error.message : String(error);
-}
-
-/**
- * Создаёт анонимный и стабильный идентификатор безопасности из Chat ID Telegram.
- *
- * @param {number|string} chatId - Идентификатор чата Telegram.
- * @returns {Promise<string>} Идентификатор в формате `user_<SHA-256 в base64url>`.
- */
-async function createSafetyIdentifier(chatId) {
-  const source = new TextEncoder().encode(String(chatId));
-  const digest = await globalThis.crypto.subtle.digest("SHA-256", source);
-  const hash = btoa(String.fromCharCode(...new Uint8Array(digest)))
-    .replaceAll("+", "-")
-    .replaceAll("/", "_")
-    .replaceAll("=", "");
-  return `user_${hash}`;
 }
 
 /**

@@ -2,10 +2,17 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { createSafetyIdentifier, createTextCorrector } from "../src/openai-client.js";
 
-test("создаёт стабильный анонимный safety identifier из Chat ID", async () => {
-  const safetyIdentifier = await createSafetyIdentifier("-1001234567890");
-  assert.equal(safetyIdentifier, "user_FQquYcsAYR_TnUULMhrbFzuEcrrS8c1oZX29ppuwrwA");
-  assert.equal(safetyIdentifier.length, 48);
+test("создаёт стабильный анонимный safety identifier из Chat ID", () => {
+  const safetyIdentifier = createSafetyIdentifier("-1001234567890");
+  assert.equal(safetyIdentifier, "user_881efe65");
+  assert.equal(safetyIdentifier.length, 13);
+  assert.equal(createSafetyIdentifier(-1001234567890n), safetyIdentifier);
+});
+
+test("отклоняет некорректный идентификатор пользователя", () => {
+  for (const id of ["", "   ", null, undefined, {}]) {
+    assert.throws(() => createSafetyIdentifier(id), TypeError);
+  }
 });
 
 test("отправляет инструкцию и возвращает текст", async () => {
