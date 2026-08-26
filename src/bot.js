@@ -148,12 +148,12 @@ function createBot(config, correctText, logger = console) {
     }
     if (activeChats.has(chat.id)) {
       telegramLog("info", "Отклонён параллельный запрос в том же чате", baseDetails);
-      await ctx.reply("<tg-emoji emoji-id="5386367538735104399">⌛️</tg-emoji> Предыдущее сообщение ещё обрабатывается. Пожалуйста, дождитесь ответа.", { reply_parameters: { message_id: messageId }, parse_mode: "HTML" });
+      await ctx.reply(`<tg-emoji emoji-id="5386367538735104399">⌛️</tg-emoji> Предыдущее сообщение ещё обрабатывается. Пожалуйста, дождитесь ответа.`, { reply_parameters: { message_id: messageId }, parse_mode: "HTML" });
       return;
     }
     if (activeRequests >= config.maxConcurrentRequests) {
       telegramLog("warn", "Достигнут лимит одновременных запросов", { ...baseDetails, active_requests: activeRequests });
-      await ctx.reply("<tg-emoji emoji-id="5386367538735104399">⌛️</tg-emoji> Бот сейчас обрабатывает другие сообщения. Попробуйте ещё раз через минуту.", { reply_parameters: { message_id: messageId }, parse_mode: "HTML" });
+      await ctx.reply(`<tg-emoji emoji-id="5386367538735104399">⌛️</tg-emoji> Бот сейчас обрабатывает другие сообщения. Попробуйте ещё раз через минуту.`, { reply_parameters: { message_id: messageId }, parse_mode: "HTML" });
       return;
     }
 
